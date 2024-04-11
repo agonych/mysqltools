@@ -24,6 +24,17 @@ Allows downloading of a zipped SQL dump files directly from the browser, useful 
 ### 6. `upload.php`
 Uploads a zipped SQL dump file and extracts it to the specified directory for further processing.
 
+### 7. `check_health.php`
+Check the web and MySQL server health and settings, outputting the results in a readable format.
+
+### 8. `check_integrity.php`
+Checks the integrity of the database, reporting on available tables, their row counts, encoding and collation settings. Also performs a database health check.
+
+### 9. `optimize.php`
+Repairs and optimizes all tables in the database, improving performance and reducing disk space usage.
+
+
+
 ## Setup Instructions
 
 ### Configurations
@@ -40,7 +51,7 @@ Ensure that the specified directories (`DUMP_DIR` and `ENCODED_DIR`) exist and a
 
 ### Running the Scripts
 
-- **Dumping the Database:**  
+- **Dumping the Database:**
   Navigate to `dump.php` through your web browser. This script will save each table's SQL dump in the specified folder.
 
 - **Restoring the Database:**  
@@ -48,6 +59,18 @@ Ensure that the specified directories (`DUMP_DIR` and `ENCODED_DIR`) exist and a
 
 - **Converting File Encoding:**  
   Access `encode.php` to convert SQL files from `ORIGINAL_ENCODING` to `TARGET_ENCODING`, saving the new files in `ENCODED_DIR`.
+
+- **Downloading SQL Dumps:**
+  Open `download.php` in your browser to download a zipped SQL dump file.
+
+- **Checking Database Health:**
+  Access `check_health.php` to check the health and settings of the web and MySQL servers.
+
+- **Checking Database & Table Integrity:**
+  Open `check_integrity.php` to check the integrity of the database, including table row counts and encoding settings.
+
+- **Optimizing Database Tables:**
+  Open `optimize.php` to repair and optimize all tables in the database, improving performance and reducing disk space usage.
 
 ## Usage Notes
 
