@@ -9,6 +9,10 @@ const DB_NAME = 'your_database'; // Database name
 // Folder to dump SQL files
 const DUMP_DIR = 'data'; // Make sure the folder exists and is writable
 
+// Upload settings
+const MAX_FILE_UPLOAD_SIZE = '256M'; // Maximum file upload size
+const MAX_POST_SIZE = '256M'; // Maximum size of POST data that PHP will accept
+
 // Application settings
 const DEBUG = true; // Set to false in production
 const MAX_EXECUTION_TIME = 0;  // No time limit
@@ -31,3 +35,7 @@ if (DEBUG) {
 // Apply server execution settings
 ini_set('max_execution_time', MAX_EXECUTION_TIME);
 ini_set('memory_limit', MEMORY_LIMIT);
+
+// Apply upload settings
+ini_set('upload_max_filesize', MAX_FILE_UPLOAD_SIZE);
+ini_set('post_max_size', MAX_POST_SIZE);

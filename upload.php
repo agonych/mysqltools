@@ -2,63 +2,49 @@
 
 require_once 'settings.php';
 
-header("Content-Type: text/html; charset=UTF-8");
-
-if (!file_exists(DUMP_DIR)) {
-    die('<p>Dump folder does not exist. Please check the folder path.</p>');
-}
-
-$conn = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
-if ($conn->connect_error) {
-    die('<p>Connection failed: ' . htmlspecialchars($conn->connect_error) . '</p>');
-}
-
-// Retrieve the database character set
-$charsetRes = $conn->query("SELECT @@character_set_database AS charset");
-if ($charsetRes === false) {
-    die('<p>Error fetching character set: ' . htmlspecialchars($conn->error) . '</p>');
-}
-$charset = $charsetRes->fetch_assoc()['charset'];
-$conn->set_charset($charset);
-
-$files = array_diff(scandir(DUMP_DIR), array('..', '.'));
-$totalFiles = count($files);
-$currentIndex = 1;
-
-foreach ($files as $file) {
-    if (pathinfo($file, PATHINFO_EXTENSION) == 'sql') {
-        $filePath = DUMP_DIR . '/' . $file;
-        echo "<p><b>Processing $file [$currentIndex/$totalFiles]...</b></p>";
-        flush();
-
-        $commands = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        if ($commands === false) {
-            echo "<p>Error reading file $file</p>";
-            continue;
-        }
-
-        $commandCount = count($commands);
-        $currentCommandIndex = 1;
-        foreach ($commands as $command) {
-            if (!empty(trim($command))) { // Avoid empty lines
-                if (!$conn->query($command)) {
-                    echo "<p>Error executing command at line $currentCommandIndex in $file: " . htmlspecialchars($conn->error) . "</p>";
-                    flush();
-                    break; // Stop executing further commands after the first error
-                }
-                if ($currentCommandIndex % 100 == 0 || $currentCommandIndex === $commandCount) { // Progress update or final command
-                    echo ". ";
-                    flush();
-                }
-                $currentCommandIndex++;
-            }
-        }
-
-        echo "<p>Completed processing $file. Total commands: $commandCount.</p>";
-        flush();
-        $currentIndex++;
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (!file_exists(DUMP_DIR) && !mkdir(DUMP_DIR, 0777, true)) {
+        die('Failed to create dump folder...');
     }
+
+    if (isset($_FILES['zip_file'])) {
+        $zipFilePath = $_FILES['zip_file']['tmp_name'];
+        $zipFileName = $_FILES['zip_file']['name'];
+
+        if ($_FILES['zip_file']['error'] === UPLOAD_ERR_OK) {
+            $zip = new ZipArchive;
+            if ($zip->open($zipFilePath) === TRUE) {
+                $zip->extractTo(DUMP_DIR);
+                $zip->close();
+                echo "<p>File '$zipFileName' uploaded and extracted successfully.</p>";
+            } else {
+                echo "<p>Failed to open uploaded ZIP file.</p>";
+            }
+        } else {
+            echo "<p>Error uploading file: " . $_FILES['zip_file']['error'] . "</p>";
+        }
+    } else {
+        echo "<p>No file uploaded.</p>";
+    }
+} else {
+    displayForm();
 }
 
-$conn->close();
-echo "<p><b>All files uploaded successfully.</b></p>";
+function displayForm() {
+    echo <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload ZIP File</title>
+</head>
+<body>
+    <h2>Upload ZIP File</h2>
+    <form action="upload.php" method="post" enctype="multipart/form-data">
+        <input type="file" name="zip_file" required>
+        <button type="submit">Upload and Extract</button>
+    </form>
+</body>
+</html>
+HTML;
+}
